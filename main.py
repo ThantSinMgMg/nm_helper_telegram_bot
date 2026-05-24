@@ -17,11 +17,12 @@ from telegram.ext import (
     InlineQueryHandler,
     filters,
 )
-from bot.handlers import start, price, handle_text, copy_callback, inline_query
+from bot.handlers import start, price, setprice, id_handler, handle_text, copy_callback, inline_query
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+ALLOWED_GROUP_ID =  os.getenv("ALLOWED_GROUP_ID")
 
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN is missing! Check your .env file.")
@@ -39,9 +40,14 @@ def main() -> None:
     """Run the bot."""
     app = Application.builder().token(BOT_TOKEN).build()
 
+    # Store config in bot_data for handlers to access
+    app.bot_data["ALLOWED_GROUP_ID"] = ALLOWED_GROUP_ID
+
     # Register handlers
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("id", id_handler))
     app.add_handler(CommandHandler("price", price))
+    app.add_handler(CommandHandler("setprice", setprice))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     app.add_handler(CallbackQueryHandler(copy_callback, pattern=r"^copy:"))
     app.add_handler(InlineQueryHandler(inline_query))
